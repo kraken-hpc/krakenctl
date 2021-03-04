@@ -177,8 +177,6 @@ node_sort = cmp_to_key(node_cmp)
 def color_state(state: str) -> Text:
     if type(state) == Text:
         state = str(state)
-        # print(str(state))
-        # return state
     if state == "RUN":
         return Text(state, style='green')
     if state == "INIT" or state == "PHYS_UNKNOWN":

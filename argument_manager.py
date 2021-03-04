@@ -198,17 +198,32 @@ class ArgumentManager:
             flag_metavar = flag[1].get("metavar")
             flag_choices = flag[1].get("choices")
             flag_string = "--{}".format(flag[0])
-            parser.add_argument(
-                flag_string,
-                choices=flag_choices,
-                type=flag_type,
-                default=flag_default,
-                dest=flag_dest,
-                action=flag_action,
-                help=flag_help,
-                metavar=flag_metavar,
-                required=False
-            )
+            flag_short = flag[1].get("short")
+            if flag_short is None:
+                parser.add_argument(
+                    flag_string,
+                    choices=flag_choices,
+                    type=flag_type,
+                    default=flag_default,
+                    dest=flag_dest,
+                    action=flag_action,
+                    help=flag_help,
+                    metavar=flag_metavar,
+                    required=False
+                )
+            else:
+                parser.add_argument(
+                    flag_short,
+                    flag_string,
+                    choices=flag_choices,
+                    type=flag_type,
+                    default=flag_default,
+                    dest=flag_dest,
+                    action=flag_action,
+                    help=flag_help,
+                    metavar=flag_metavar,
+                    required=False
+                )
         # parser.add_argument(
         #     "--type",
         #     choices=["dsc", "cfg", "mixed"],

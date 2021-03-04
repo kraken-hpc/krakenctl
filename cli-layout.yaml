@@ -26,6 +26,7 @@ krakenctl:
           func: node_list
           optional_flags:
             type:
+              short: "-t"
               type: string
               choices:
                 - mixed
