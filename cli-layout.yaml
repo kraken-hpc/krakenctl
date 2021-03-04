@@ -1,0 +1,78 @@
+krash:
+  help: Desired action to perform
+  global_optional_flags:
+    verbose:
+      short: "-v"
+      type: bool
+      default: false
+    ip:
+      short: "-i"
+      type: str
+      default: "127.0.0.1:3141"
+      metavar: IP_ADDRESS
+  actions:
+    node:
+      help: Get node details and manipulate node config
+      actions:
+        list:
+          help: List all the nodes
+          func: node_list
+          optional_flags:
+            type:
+              type: string
+              choices:
+                - mixed
+                - dsc
+                - cfg
+              default: mixed
+              metavar: STATE_TYPE
+              help: The type of node state you want. cfg, dsc, or mixed
+        create:
+          help: Create nodes with a kraken cfg state file
+          func: node_create
+          arguments:
+            node_config:
+              type: path
+        update:
+          help: Update nodes with a kraken cfg state file
+          func: node_update
+          arguments:
+            type:
+              metavar: STATE_TYPE
+              help: dsc or cfg
+              type: string
+              choices:
+                - dsc
+                - cfg
+            node_config:
+              metavar: CONFIG_PATH
+              help: Path to config
+              type: str
+
+        freeze:
+          help: Freeze mutations on a single node
+          func: node_freeze
+          arguments:
+            node_id:
+              type: str
+    sme:
+      help: Control the kraken SME
+      actions:
+        freeze:
+          help: Stop all mutations
+          func: sme_freeze
+        thaw:
+          help: Resume all mutations
+          func: sme_thaw
+        status:
+          help: Get the status of the SME
+          func: sme_status
+    runtime:
+      help: Change kraken runtime settings
+      actions:
+        log_level:
+          help: Change kraken log_level
+          func: log_level
+          arguments:
+            log_level:
+              type: int
