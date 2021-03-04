@@ -6,58 +6,7 @@ from typing import List
 from functools import cmp_to_key
 import yaml
 
-
-# # r = requests.get('http://192.168.57.10:3141/cfg/nodes')
-# # json = r.json()
-
-# # print(json)
-
-# columns = []
-
-# for node in json["nodes"]:
-#     # print(node.keys())
-#     for key in node.keys():
-#         if key not in columns:
-#             columns.append(key)
-
-# console = Console()
-
-# table = Table(show_header=True, header_style="bold magenta")
-# for key in columns:
-#     table.add_column(key)
-
-# # table.add_row("blah", "blah")
-
-# for node in json["nodes"]:
-#     row_strings = []
-#     for key in columns:
-#         if key in node.keys():
-#             row_strings.append(str(node[key]))
-#         else:
-#             row_strings.append("")
-#     table.add_row(*row_strings)
-# # node[key]
-# # table.add_column("Date", style="dim", width=12)
-# # table.add_column("Title")
-# # table.add_column("Production Budget", justify="right")
-# # table.add_column("Box Office", justify="right")
-# # table.add_row(
-# #     "Dev 20, 2019", "Star Wars: The Rise of Skywalker", "$275,000,0000", "$375,126,118"
-# # )
-# # table.add_row(
-# #     "May 25, 2018",
-# #     "[red]Solo[/red]: A Star Wars Story",
-# #     "$275,000,0000",
-# #     "$393,151,347",
-# # )
-# # table.add_row(
-# #     "Dec 15, 2017",
-# #     "Star Wars Ep. VIII: The Last Jedi",
-# #     "$262,000,000",
-# #     "[bold]$1,332,539,889[/bold]",
-# # )
-
-# console.print(table)
+special_keys = ["nodename", "id"]
 
 
 def print_table(nodes: List[dict], verbose: bool = False):
@@ -78,8 +27,6 @@ def print_table(nodes: List[dict], verbose: bool = False):
     for key in columns:
         table.add_column(key)
 
-    # table.add_row("blah", "blah")
-
     nodes.sort(key=node_sort)
 
     for node in nodes:
@@ -90,20 +37,6 @@ def print_table(nodes: List[dict], verbose: bool = False):
                     row_strings.append(parse_item_long(node[key]))
                 else:
                     row_strings.append(parse_item_short(node[key]))
-                # text = yaml.dump(
-                #     node[key], default_style=None, sort_keys=False)
-                # # print("[{}]".format(text))
-                # if text.endswith('...\n'):
-                #     text = text[:-4]
-                # if text.endswith('\n'):
-                #     text = text[:-1]
-                # row_strings.append(text)
-                # if type(node[key]) == list:
-                #     row_strings.append(list_to_string(node[key], 0))
-                # elif type(node[key]) == dict:
-                #     row_strings.append(dict_to_string(node[key], 0))
-                # else:
-                #     row_strings.append(str(node[key]))
             else:
                 row_strings.append("")
         table.add_row(*row_strings)
@@ -182,46 +115,6 @@ def parse_item_long(items_list) -> str:
     return final_string
 
 
-# def add_to_string(current_string: str, addition: str) -> str:
-#     if current_string == "":
-#         return addition
-#     else:
-#         return "{}\n{}".format(current_string, addition)
-
-
-# def dict_to_string_old(item_dict: dict, tab_level: int) -> str:
-#     final_string = ""
-#     for item in item_dict.items():
-#         if type(item[1]) == list:
-#             final_string = add_to_string(
-#                 final_string, "{:{width}}{}:\n{}".format("", item[0],  list_to_string(item[1], tab_level + 1), width=tab_level*2))
-#         elif type(item[1]) == dict:
-#             final_string = add_to_string(
-#                 final_string, "{:{width}}{}:\n{}".format("", item[0], dict_to_string(item[1], tab_level + 1), width=tab_level*2))
-#         else:
-#             final_string = add_to_string(
-#                 final_string, "{:{width}}{}:{}".format("", item[0], str(item[1]), width=tab_level*2))
-#     return final_string
-
-
-# def list_to_string(item_list: list, tab_level: int) -> str:
-#     print(tab_level)
-#     final_string = ""
-#     for item in item_list:
-#         if type(item) == dict:
-#             final_string = add_to_string(
-#                 final_string, "{:>{width}}{}".format("-", dict_to_string(item, tab_level + 1), width=tab_level * 2))
-#         elif type(item) == list:
-#             final_string = add_to_string(
-#                 final_string, "{:>{width}}{}".format("-", list_to_string(item, tab_level + 1), width=tab_level * 2))
-#         else:
-#             final_string = add_to_string(
-#                 final_string, "{:>{width}}{}".format("-", str(item), width=tab_level * 2))
-#     return final_string
-
-special_keys = ["nodename", "id"]
-
-
 def column_cmp(a, b):
     if a in special_keys and b not in special_keys:
         return -1
@@ -240,16 +133,6 @@ def column_cmp(a, b):
         return -1
     else:
         return 0
-
-    # if a[1] > b[1]:
-    #     return -1
-    # elif a[1] == b[1]:
-    #     if a[0] > b[0]:
-    #         return 1
-    #     else:
-    #         return -1
-    # else:
-    #     return 1
 
 
 column_sort = cmp_to_key(column_cmp)

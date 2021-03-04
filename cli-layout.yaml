@@ -34,6 +34,14 @@ krakenctl:
               default: mixed
               metavar: STATE_TYPE
               help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
+        info:
+          help: Get info about a single node
+          func: node_info
+          arguments:
+            node_id:
+              type: string
+              metavar: NODE_ID
+              help: ID of the desired node
         create:
           help: Create nodes with a kraken cfg state file
           func: node_create

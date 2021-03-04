@@ -299,7 +299,10 @@ class ArgumentManager:
         # print(args)
         # print("non_defaults:{}".format(non_defaults))
 
-        args.func(non_defaults)
+        try:
+            args.func(non_defaults)
+        except:
+            print("This command is not yet implemented")
 
         # find all repeating regex
         # initial_regex = r'(\w+?)_(\w+)'
