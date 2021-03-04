@@ -274,7 +274,7 @@ class ArgumentManager:
                 non_defaults[argument[0]] = argument[1]
 
         config_args = get_config(
-            default_arguments, non_defaults.get("verbose"))
+            default_arguments, non_defaults.get("debug"))
 
         # go through each config argument (that hasn't already been set from the cli) and check if it isn't a default
         for argument in config_args.items():
@@ -343,7 +343,7 @@ def parse_action(yaml_type: str) -> str:
     return "store"
 
 
-def get_config(defaults: dict, verbose: bool) -> dict:
+def get_config(defaults: dict, debug: bool) -> dict:
     # check to see if config exists in home directory
     # home = str(pathlib.Path.home())
     home = pathlib.Path.home()
@@ -352,20 +352,20 @@ def get_config(defaults: dict, verbose: bool) -> dict:
     # if it does exist, use it
     try:
         with open(config_path) as file:
-            if verbose:
+            if debug:
                 print("found config file at: {}".format(config_path))
             try:
                 yaml_dict = yaml.safe_load(file)
                 return yaml_dict
                 # print(yaml_dict)
             except yaml.YAMLError as exc:
-                if verbose:
+                if debug:
                     print("error while loading config: {}\nusing defaults".format(exc))
                 return defaults
 
     # if it doens't exist, try to create it
     except:
-        if verbose:
+        if debug:
             print("could not find file at: {}\ncreating one with defaults".format(
                 config_path))
         with open(config_path, 'w') as file:

@@ -1,15 +1,22 @@
-krash:
+krakenctl:
   help: Desired action to perform
   global_optional_flags:
     verbose:
       short: "-v"
       type: bool
       default: false
+      help: Provides more details
+    debug:
+      short: "-d"
+      type: bool
+      default: false
+      help: Provides details of what krakenctl is doing
     ip:
       short: "-i"
       type: str
       default: "127.0.0.1:3141"
       metavar: IP_ADDRESS
+      help: IP address of Kraken instance
   actions:
     node:
       help: Get node details and manipulate node config
@@ -26,13 +33,15 @@ krash:
                 - cfg
               default: mixed
               metavar: STATE_TYPE
-              help: The type of node state you want. cfg, dsc, or mixed
+              help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
         create:
           help: Create nodes with a kraken cfg state file
           func: node_create
           arguments:
             node_config:
               type: path
+              metavar: CONFIG_PATH
+              help: Path to config
         update:
           help: Update nodes with a kraken cfg state file
           func: node_update

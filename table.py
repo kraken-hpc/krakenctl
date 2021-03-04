@@ -109,25 +109,51 @@ def print_table(nodes: List[dict], verbose: bool = False):
     console.print(table, no_wrap=True)
 
 
+def parse_item_short_dict(provided_dict: dict) -> List[str]:
+    final_lines = []
+    state = provided_dict.get("state")
+    item_id = provided_dict.get("id")
+    item_type = provided_dict.get("@type")
+    first_key = list(provided_dict.keys())[0]
+    content_key = ""
+    content = ""
+    final_content = ""
+    if item_id is not None:
+        content_key = "id"
+        content = item_id
+    elif item_type is not None:
+        content_key = "@type"
+        content = item_type
+    else:
+        content_key = first_key
+        content = item[first_key]
+
+    final_lines.append("- {}: {}".format(content_key, content))
+
+    if state is not None:
+        final_lines.append("  {}: {}".format("state", state))
+
+    return final_lines
+
+
+def parse_item_short_list(provided_list: list) -> List[str]:
+    final_lines = []
+    for item in provided_list:
+        if type(item) == dict:
+            dict_lines = parse_item_short_dict(item)
+            final_lines.extend(dict_lines)
+
+    return final_lines
+
+
 def parse_item_short(provided_item) -> str:
     final_string = ""
     if type(provided_item) == list:
-        for item in provided_item:
-            if type(item) == dict:
-                first_key = list(item.keys())[0]
-                if final_string == "":
-                    final_string = "- {}: {}".format(first_key,
-                                                     item[first_key])
-                else:
-                    final_string = "{}\n- {}: {}".format(final_string,
-                                                         first_key, item[first_key])
+        list_lines = parse_item_short_list(provided_item)
+        final_string = "\n".join(list_lines)
     elif type(provided_item) == dict:
-        first_key = list(item.keys())[0]
-        if final_string == "":
-            final_string = "- {}: {}".format(first_key, item[first_key])
-        else:
-            final_string = "{}\n- {}: {}".format(final_string,
-                                                 first_key, item[first_key])
+        dict_lines = parse_item_short_dict(provided_item)
+        final_string = "\n".join(dict_lines)
     else:
         final_string = str(provided_item)
 
