@@ -1,5 +1,7 @@
 from rich.console import Console
 from rich.table import Column, Table
+from rich.text import Text
+from rich.style import Style
 from typing import List
 from functools import cmp_to_key
 import yaml
@@ -109,7 +111,7 @@ def print_table(nodes: List[dict], verbose: bool = False):
     console.print(table, no_wrap=True)
 
 
-def parse_item_short_dict(provided_dict: dict) -> List[str]:
+def parse_item_short_dict(provided_dict: dict) -> List[Text]:
     final_lines = []
     state = provided_dict.get("state")
     item_id = provided_dict.get("id")
@@ -128,15 +130,23 @@ def parse_item_short_dict(provided_dict: dict) -> List[str]:
         content_key = first_key
         content = item[first_key]
 
-    final_lines.append("- {}: {}".format(content_key, content))
+    final_content = Text("- ", style="bold")
+    final_content.append(content_key, style="bold")
+    final_content.append(": ", style="bold")
+    final_content.append(content, style=Style(bold=False))
+    final_lines.append(final_content)
 
     if state is not None:
-        final_lines.append("  {}: {}".format("state", state))
+        state_content = Text("  ")
+        state_content.append("state", style="bold")
+        state_content.append(": ", style="bold")
+        state_content.append(color_state(state))
+        final_lines.append(state_content)
 
     return final_lines
 
 
-def parse_item_short_list(provided_list: list) -> List[str]:
+def parse_item_short_list(provided_list: list) -> List[Text]:
     final_lines = []
     for item in provided_list:
         if type(item) == dict:
@@ -146,16 +156,16 @@ def parse_item_short_list(provided_list: list) -> List[str]:
     return final_lines
 
 
-def parse_item_short(provided_item) -> str:
-    final_string = ""
+def parse_item_short(provided_item) -> Text:
+    final_string = None
     if type(provided_item) == list:
         list_lines = parse_item_short_list(provided_item)
-        final_string = "\n".join(list_lines)
+        final_string = Text("\n").join(list_lines)
     elif type(provided_item) == dict:
         dict_lines = parse_item_short_dict(provided_item)
         final_string = "\n".join(dict_lines)
     else:
-        final_string = str(provided_item)
+        final_string = Text(str(provided_item))
 
     return final_string
 
@@ -269,3 +279,14 @@ def node_cmp(a: dict, b: dict):
 
 
 node_sort = cmp_to_key(node_cmp)
+
+
+def color_state(state: str) -> Text:
+    if state == "RUN":
+        return Text(state, style='green')
+    if state == "INIT":
+        return Text(state, style='yellow')
+    if state == "ERROR":
+        return Text(state, style='bold red')
+    else:
+        return Text(state)
