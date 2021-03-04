@@ -32,13 +32,20 @@ def print_table(nodes: List[dict], verbose: bool = False):
     for node in nodes:
         row_strings = []
         for key in columns:
+            column_string = ""
             if key in node.keys():
                 if verbose:
-                    row_strings.append(parse_item_long(node[key]))
+                    if key == "runState" or key == "physState":
+                        column_string = color_state(parse_item_long(node[key]))
+                    else:
+                        column_string = parse_item_long(node[key])
                 else:
-                    row_strings.append(parse_item_short(node[key]))
-            else:
-                row_strings.append("")
+                    if key == "runState" or key == "physState":
+                        column_string = color_state(
+                            parse_item_short(node[key]))
+                    else:
+                        column_string = parse_item_short(node[key])
+            row_strings.append(column_string)
         table.add_row(*row_strings)
 
     console.print(table, no_wrap=True)
@@ -63,10 +70,13 @@ def parse_item_short_dict(provided_dict: dict) -> List[Text]:
         content_key = first_key
         content = item[first_key]
 
-    final_content = Text("- ", style="bold")
-    final_content.append(content_key, style="bold")
-    final_content.append(": ", style="bold")
-    final_content.append(content, style=Style(bold=False))
+    final_content = Text.assemble(
+        "- ", content_key, ": ", (content, Style(bold=False)), style="bold")
+
+    # final_content = Text("- ", style="bold")
+    # final_content.append(content_key, style="bold")
+    # final_content.append(": ", style="bold")
+    # final_content.append(content, style=Style(bold=False))
     final_lines.append(final_content)
 
     if state is not None:
@@ -165,11 +175,23 @@ node_sort = cmp_to_key(node_cmp)
 
 
 def color_state(state: str) -> Text:
+    if type(state) == Text:
+        state = str(state)
+        # print(str(state))
+        # return state
     if state == "RUN":
         return Text(state, style='green')
-    if state == "INIT":
+    if state == "INIT" or state == "PHYS_UNKNOWN":
         return Text(state, style='yellow')
-    if state == "ERROR":
+    if state == "ERROR" or state == "PHYS_ERROR":
         return Text(state, style='bold red')
+    if state == "SYNC" or state == "POWER_ON":
+        return Text(state, style='bold green')
+    if state == "POWER_OFF":
+        return Text(state, style='light grey')
+    if state == "POWER_CYCLE":
+        return Text(state, style='purple')
+    if state == "PHYS_HANG":
+        return Text(state, style='orange')
     else:
         return Text(state)

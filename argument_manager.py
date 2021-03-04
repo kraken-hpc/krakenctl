@@ -299,9 +299,9 @@ class ArgumentManager:
         # print(args)
         # print("non_defaults:{}".format(non_defaults))
 
-        try:
+        if vars(args)['func'] is not None:
             args.func(non_defaults)
-        except:
+        else:
             print("This command is not yet implemented")
 
         # find all repeating regex
