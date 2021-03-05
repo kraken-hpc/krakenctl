@@ -77,18 +77,11 @@ def parse_item_short_dict(provided_dict: dict) -> List[Text]:
 
     final_content = Text.assemble(
         "- ", content_key, ": ", (content, Style(bold=False)), style="bold")
-
-    # final_content = Text("- ", style="bold")
-    # final_content.append(content_key, style="bold")
-    # final_content.append(": ", style="bold")
-    # final_content.append(content, style=Style(bold=False))
     final_lines.append(final_content)
 
     if state is not None:
-        state_content = Text("  ")
-        state_content.append("state", style="bold")
-        state_content.append(": ", style="bold")
-        state_content.append(color_state(state))
+        state_content = Text.assemble(
+            "  ", "state", ": ", (color_state(state)), style="bold")
         final_lines.append(state_content)
 
     return final_lines
@@ -118,16 +111,77 @@ def parse_item_short(provided_item) -> Text:
     return final_string
 
 
-def parse_item_long(items_list) -> str:
-    final_string = yaml.dump(
-        items_list, default_style=None, sort_keys=False)
-    # print("[{}]".format(text))
-    if final_string.endswith('...\n'):
-        final_string = final_string[:-4]
-    if final_string.endswith('\n'):
-        final_string = final_string[:-1]
+def parse_item_long(provided_item) -> Text:
+    final_string = None
+    if type(provided_item) == list:
+        list_lines = parse_item_long_list(provided_item, 0)
+        final_string = Text("\n").join(list_lines)
+    elif type(provided_item) == dict:
+        dict_lines = parse_item_long_dict(provided_item, 0)
+        final_string = "\n".join(dict_lines)
+    else:
+        final_string = Text(str(provided_item))
 
     return final_string
+
+
+def parse_item_long_list(provided_list: list, level: int) -> List[Text]:
+    final_lines = []
+    prepend_hyphen = "- "
+    prepend_spaces = "  "
+    for n in range(level):
+        prepend_hyphen = "  " + prepend_hyphen
+        prepend_spaces = "  " + prepend_spaces
+
+    prepend_hyphen = Text(prepend_hyphen, Style(bold=True))
+
+    for item in provided_list:
+        if type(item) == dict:
+            dict_lines = parse_item_long_dict(item, level)
+            # fix the dictionary so it has a hyphen on the first line
+            for i in range(len(dict_lines)):
+                if i == 0:
+                    dict_lines[0] = Text.assemble(
+                        prepend_hyphen, dict_lines[0])
+                else:
+                    dict_lines[i] = Text.assemble(
+                        prepend_spaces, dict_lines[i])
+            final_lines.extend(dict_lines)
+        else:
+            final_content = Text.assemble(
+                prepend_spaces, (str(item), Style(bold=False)), style='bold')
+            final_lines.append(final_content)
+
+    return final_lines
+
+
+def parse_item_long_dict(provided_dict: dict, level: int) -> List[Text]:
+    final_lines = []
+
+    prepend_spaces = ""
+    for n in range(level):
+        prepend_spaces = prepend_spaces + "  "
+
+    for item in provided_dict.items():
+        if type(item[1]) == dict:
+            final_content = Text.assemble(
+                prepend_spaces, item[0], ": ", style="bold")
+            final_lines.append(final_content)
+            sub_dict_lines = parse_item_long_dict(item[1], level + 1)
+            final_lines.extend(sub_dict_lines)
+        elif type(item[1]) == list:
+            sub_list_lines = parse_item_long_list(item[1], level + 1)
+            final_lines.extend(sub_list_lines)
+        else:
+            # print(type(item[1]))
+            value = Text(str(item[1]), Style(bold=False))
+            if item[0] == "state":
+                value = color_state(value)
+            final_content = Text.assemble(
+                prepend_spaces, item[0], ": ", value, style="bold")
+            final_lines.append(final_content)
+
+    return final_lines
 
 
 def column_cmp(a, b):
