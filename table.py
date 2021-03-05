@@ -89,6 +89,9 @@ def parse_item_short_dict(provided_dict: dict) -> List[Text]:
 
 def parse_item_short_list(provided_list: list) -> List[Text]:
     final_lines = []
+
+    provided_list.sort(key=list_sort)
+
     for item in provided_list:
         if type(item) == dict:
             dict_lines = parse_item_short_dict(item)
@@ -134,6 +137,8 @@ def parse_item_long_list(provided_list: list, level: int) -> List[Text]:
         prepend_spaces = "  " + prepend_spaces
 
     prepend_hyphen = Text(prepend_hyphen, Style(bold=True))
+
+    provided_list.sort(key=list_sort)
 
     for item in provided_list:
         if type(item) == dict:
@@ -249,6 +254,29 @@ def node_cmp(a: dict, b: dict):
 
 
 node_sort = cmp_to_key(node_cmp)
+
+
+def list_cmp(a, b):
+    if type(a) == dict and type(b) == dict:
+        a_type = a.get("@type")
+        b_type = b.get("@type")
+        if a_type is not None and b_type is not None:
+            if a_type > b_type:
+                return 1
+            elif a_type < b_type:
+                return -1
+        a_id = a.get("id")
+        b_id = b.get("id")
+        if a_id is not None and b_id is not None:
+            if a_id > b_id:
+                return 1
+            elif a_id < b_id:
+                return -1
+    else:
+        return 0
+
+
+list_sort = cmp_to_key(list_cmp)
 
 
 def color_state(state: str) -> Text:
