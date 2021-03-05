@@ -24,8 +24,13 @@ def print_table(nodes: List[dict], verbose: bool = False):
 
     table = Table(show_header=True,
                   header_style="bold magenta", show_lines=True)
+
+    no_wrap = True
+    if verbose:
+        no_wrap = False
+
     for key in columns:
-        table.add_column(key)
+        table.add_column(key, no_wrap=no_wrap)
 
     nodes.sort(key=node_sort)
 
@@ -178,18 +183,18 @@ def color_state(state: str) -> Text:
     if type(state) == Text:
         state = str(state)
     if state == "RUN":
-        return Text(state, style='green')
-    if state == "INIT" or state == "PHYS_UNKNOWN":
-        return Text(state, style='yellow')
-    if state == "ERROR" or state == "PHYS_ERROR":
-        return Text(state, style='bold red')
-    if state == "SYNC" or state == "POWER_ON":
         return Text(state, style='bold green')
-    if state == "POWER_OFF":
-        return Text(state, style='light grey')
-    if state == "POWER_CYCLE":
-        return Text(state, style='purple')
-    if state == "PHYS_HANG":
-        return Text(state, style='orange')
+    elif state == "INIT" or state == "PHYS_UNKNOWN":
+        return Text(state, style='bold yellow')
+    elif state == "ERROR" or state == "PHYS_ERROR":
+        return Text(state, style='bold red')
+    elif state == "SYNC" or state == "POWER_ON":
+        return Text(state, style='bold green')
+    elif state == "POWER_OFF":
+        return Text(state, style='bold light grey')
+    elif state == "POWER_CYCLE":
+        return Text(state, style='bold purple')
+    elif state == "PHYS_HANG":
+        return Text(state, style='bold cyan')
     else:
         return Text(state)
