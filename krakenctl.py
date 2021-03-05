@@ -43,8 +43,10 @@ def node_update(args):
 
 def node_list(args: dict):
     verbose = args.get('verbose')
-    ip = args.get("ip")
+    ip = args.get('ip')
     debug = args.get('debug')
+    filter_string = args.get('krakenctl_node_list_filter')
+
     if debug:
         print("node list got args: {}".format(args))
 
@@ -66,7 +68,12 @@ def node_list(args: dict):
         dsc_json = get_url(dsc_url)
         json = merge_dict(cfg_json, dsc_json)
 
-    print_table(json['nodes'], verbose=args.get("verbose"))
+    final_json = json
+    if filter_string is not None:
+        final_json = filter_dict(filter_string, json)
+        # print(final_json)
+
+    print_table(final_json['nodes'], verbose=args.get("verbose"))
 
 
 def get_url(url: str) -> dict:
@@ -176,6 +183,31 @@ def merge_dict(a, b, path=None) -> dict:
         else:
             a[key] = b[key]
     return a
+
+
+def filter_dict(filter_string: str, json: dict) -> dict:
+    desired_columns = []
+    for column in filter_string.split(','):
+        desired_columns.append(column.strip())
+
+    if "id" not in desired_columns:
+        desired_columns.append("id")
+    if "nodename" not in desired_columns:
+        desired_columns.append("nodename")
+
+    # print(desired_columns)
+    final_nodes = []
+    for node in json['nodes']:
+        final_node = {}
+        for column in desired_columns:
+            column_value = node.get(column)
+            if column_value is None:
+                column_value = ""
+            final_node[column] = column_value
+            # print(column, column_value)
+        final_nodes.append(final_node)
+
+    return {"nodes": final_nodes}
 
 
 if __name__ == "__main__":

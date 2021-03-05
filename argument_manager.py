@@ -341,11 +341,11 @@ def parse_type(yaml_type: str) -> object:
     if yaml_type == None:
         return None
     if yaml_type == "string":
-        return str.lower
+        return str
     if yaml_type == "enum":
         return str.lower
     if yaml_type == "str":
-        return str.lower
+        return str
     if yaml_type == "int":
         return int
     if yaml_type == "float":

@@ -35,6 +35,11 @@ krakenctl:
               default: mixed
               metavar: STATE_TYPE
               help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
+            filter:
+              type: string
+              metavar: FILTER
+              short: "-f"
+              help: pass column names to include in the table. id and nodename are always included. ex krakenctl node list --filter extensions,services
         info:
           help: Get info about a single node
           func: node_info

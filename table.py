@@ -150,23 +150,41 @@ column_sort = cmp_to_key(column_cmp)
 
 def node_cmp(a: dict, b: dict):
     a_parent_id = a.get("parentId")
-    if a_parent_id is None or a_parent_id == "":
-        return -1
     b_parent_id = b.get("parentId")
-    if b_parent_id is None or b_parent_id == "":
-        return 1
+    if not ((a_parent_id is None or a_parent_id == "") and (b_parent_id is None or b_parent_id == "")):
+        if a_parent_id is None or a_parent_id == "":
+            return -1
+        if b_parent_id is None or b_parent_id == "":
+            return 1
+
     a_nodename = a.get("nodename")
     b_nodename = b.get("nodename")
-    if a_nodename is None and b_nodename is not None:
-        return -1
-    elif a_nodename is not None and b_nodename is None:
-        return 1
-    elif a_nodename is None and b_nodename is None:
-        return 0
-    elif a_nodename > b_nodename:
-        return 1
-    elif a_nodename < b_nodename:
-        return -1
+    if not ((a_nodename is None or a_nodename == "") and (b_nodename is None or b_nodename == "")):
+        if (a_nodename is None or a_nodename == "") and (b_nodename is not None and b_nodename != ""):
+            return -1
+        elif (a_nodename is not None and a_nodename != "") and (b_nodename is None or b_nodename == ""):
+            return 1
+        elif (a_nodename is None or a_nodename == "") and (b_nodename is None or b_nodename == ""):
+            return 0
+        elif a_nodename > b_nodename:
+            return 1
+        elif a_nodename < b_nodename:
+            return -1
+
+    a_id = a.get("id")
+    b_id = b.get("id")
+    if not ((a_id is None or a_id == "") and (b_id is None or b_id == "")):
+        if (a_id is None or a_id == "") and (b_id is not None and b_id != ""):
+            return -1
+        elif (a_id is not None and a_id != "") and (b_id is None or b_id == ""):
+            return 1
+        elif (a_id is None or a_id == "") and (b_id is None or b_id == ""):
+            return 0
+        elif a_id > b_id:
+            return 1
+        elif a_id < b_id:
+            return -1
+
     else:
         return 0
 
