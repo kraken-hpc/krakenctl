@@ -40,6 +40,9 @@ krakenctl:
               metavar: FILTER
               short: "-f"
               help: pass column names to include in the table. id and nodename are always included. ex krakenctl node list --filter extensions,services
+              nargs: "?"
+              const: "id,nodename"
+              default: "id,nodename"
         info:
           help: Get info about a single node
           func: node_info

@@ -14,14 +14,15 @@ def main():
     function_map = {
         "node_list": node_list,
         "node_create": node_create,
-        "node_update": node_update
+        "node_update": node_update,
+        "node_info": node_info,
     }
 
     argument_manager = ArgumentManager(function_map, "cli-layout.yaml")
     argument_manager.parse_args()
 
 
-def node_create(args):
+def node_create(args: dict):
     # print("node create got these args: {}".format(args))
     verbose = args.get("verbose")
     debug = args.get("debug")
@@ -31,7 +32,7 @@ def node_create(args):
     send_file(url, "POST", file_location, debug, verbose)
 
 
-def node_update(args):
+def node_update(args: dict):
     # print("node update got these args: {}".format(args))
     verbose = args.get("verbose")
     debug = args.get("debug")
@@ -64,8 +65,9 @@ def node_list(args: dict):
     elif args['krakenctl_node_list_type'] == 'mixed':
         if debug:
             print("state type is mixed")
-        cfg_json = get_url(cfg_url)
-        dsc_json = get_url(dsc_url)
+        cfg_json = get_url(cfg_url, debug, verbose)
+        dsc_json = get_url(dsc_url, debug, verbose)
+
         json = merge_dict(cfg_json, dsc_json)
 
     final_json = json
@@ -76,9 +78,24 @@ def node_list(args: dict):
     print_table(final_json['nodes'], verbose=args.get("verbose"))
 
 
-def get_url(url: str) -> dict:
+def node_info(args: dict):
+    print("node info got these args: {}".format(args))
+    verbose = args.get("verbose")
+    debug = args.get("debug")
+    node_id = args.get("krakenctl_node_info_node_id")
+
+    url = build_url(args.get("ip"), "cfg/node/")
+    url = "{}{}".format(url, node_id)
+
+    print_table([get_url(url)], verbose)
+    # print(get_url(url))
+
+
+def get_url(url: str, debug: bool = False, verbose: bool = False) -> dict:
     # hardcoded_ip = "192.168.57.10:3141"
     try:
+        if debug:
+            print("requesting {}".format(url))
         r = requests.get(url, timeout=3)
         json = r.json()
         return json

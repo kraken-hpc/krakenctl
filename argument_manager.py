@@ -192,6 +192,7 @@ class ArgumentManager:
         for flag in optional_flags.items():
             flag_type = parse_type(flag[1].get("type"))
             flag_default = flag[1].get("default")
+            flag_const = flag[1].get("const")
             flag_dest = self._create_dest(parent_dest, flag[0])
             flag_action = parse_action(flag[1].get("type"))
             flag_help = flag[1].get("help", "")
@@ -199,12 +200,16 @@ class ArgumentManager:
             flag_choices = flag[1].get("choices")
             flag_string = "--{}".format(flag[0])
             flag_short = flag[1].get("short")
+            allow_none = flag[1].get("allow_none")
+            flag_nargs = flag[1].get("nargs")
             if flag_short is None:
                 parser.add_argument(
                     flag_string,
+                    nargs=flag_nargs,
                     choices=flag_choices,
                     type=flag_type,
                     default=flag_default,
+                    const=flag_const,
                     dest=flag_dest,
                     action=flag_action,
                     help=flag_help,
@@ -215,9 +220,11 @@ class ArgumentManager:
                 parser.add_argument(
                     flag_short,
                     flag_string,
+                    nargs=flag_nargs,
                     choices=flag_choices,
                     type=flag_type,
                     default=flag_default,
+                    const=flag_const,
                     dest=flag_dest,
                     action=flag_action,
                     help=flag_help,
