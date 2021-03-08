@@ -50,6 +50,24 @@ krakenctl:
               type: string
               metavar: NODE_ID
               help: ID of the desired node
+          optional_flags:
+            type:
+              short: "-t"
+              type: string
+              choices:
+                - mixed
+                - dsc
+                - cfg
+              default: mixed
+              metavar: STATE_TYPE
+              help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
+            filter:
+              type: string
+              metavar: FILTER
+              short: "-f"
+              help: pass column names to include in the table. id and nodename are always included. ex krakenctl node list --filter extensions,services
+              nargs: "?"
+              const: "id,nodename"
         create:
           help: Create nodes with a kraken cfg state file
           func: node_create

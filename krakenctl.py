@@ -15,7 +15,7 @@ def main():
         "node_list": node_list,
         "node_create": node_create,
         "node_update": node_update,
-        "node_info": node_info,
+        "node_info": node_list,
     }
 
     argument_manager = ArgumentManager(function_map, "cli-layout.yaml")
@@ -47,6 +47,8 @@ def node_list(args: dict):
     ip = args.get('ip')
     debug = args.get('debug')
     filter_string = args.get('krakenctl_node_list_filter')
+    node_id = args.get("krakenctl_node_info_node_id")
+    list_type = args.get("krakenctl_node_list_type")
 
     if debug:
         print("node list got args: {}".format(args))
@@ -54,15 +56,23 @@ def node_list(args: dict):
     dsc_url = build_url(ip, "dsc/nodes")
     cfg_url = build_url(ip, "cfg/nodes")
 
-    if args['krakenctl_node_list_type'] == 'cfg':
+    if node_id != None:
+        dsc_url = build_url(ip, "dsc/node")
+        dsc_url = "{}/{}".format(dsc_url, node_id)
+        cfg_url = build_url(ip, "cfg/node")
+        cfg_url = "{}/{}".format(cfg_url, node_id)
+        list_type = args.get("krakenctl_node_info_type")
+        filter_string = args.get("krakenctl_node_info_filter")
+
+    if list_type == 'cfg':
         if debug:
             print("state type is cfg")
         json = get_url(cfg_url)
-    elif args['krakenctl_node_list_type'] == 'dsc':
+    elif list_type == 'dsc':
         if debug:
             print("state type is dsc")
         json = get_url(dsc_url)
-    elif args['krakenctl_node_list_type'] == 'mixed':
+    elif list_type == 'mixed':
         if debug:
             print("state type is mixed")
         cfg_json = get_url(cfg_url, debug, verbose)
@@ -70,25 +80,15 @@ def node_list(args: dict):
 
         json = merge_dict(cfg_json, dsc_json)
 
+    if node_id != None:
+        json = {"nodes": [json]}
+
     final_json = json
     if filter_string is not None:
         final_json = filter_dict(filter_string, json)
         # print(final_json)
 
     print_table(final_json['nodes'], verbose=args.get("verbose"))
-
-
-def node_info(args: dict):
-    print("node info got these args: {}".format(args))
-    verbose = args.get("verbose")
-    debug = args.get("debug")
-    node_id = args.get("krakenctl_node_info_node_id")
-
-    url = build_url(args.get("ip"), "cfg/node/")
-    url = "{}{}".format(url, node_id)
-
-    print_table([get_url(url)], verbose)
-    # print(get_url(url))
 
 
 def get_url(url: str, debug: bool = False, verbose: bool = False) -> dict:
