@@ -23,7 +23,7 @@ class GlobalFlag:
         self.type = parse_type(flag.get("type"))
         self.help = flag.get("help", "")
         self.metavar = flag.get("metavar")
-        self.action = parse_action(flag.get("type"))
+        self.action = parse_action(self.type)
         self.choices = flag.get("choices")
 
         # final_global_flags = List[Callable[str,
@@ -194,7 +194,7 @@ class ArgumentManager:
             flag_default = flag[1].get("default")
             flag_const = flag[1].get("const")
             flag_dest = self._create_dest(parent_dest, flag[0])
-            flag_action = parse_action(flag[1].get("type"))
+            flag_action = parse_action(flag_type)
             flag_help = flag[1].get("help", "")
             flag_metavar = flag[1].get("metavar")
             flag_choices = flag[1].get("choices")
@@ -202,7 +202,16 @@ class ArgumentManager:
             flag_short = flag[1].get("short")
             allow_none = flag[1].get("allow_none")
             flag_nargs = flag[1].get("nargs")
-            if flag_short is None:
+            if flag_type == bool:
+                parser.add_argument(
+                    flag_short,
+                    flag_string,
+                    dest=flag_dest,
+                    action=flag_action,
+                    help=flag_help,
+                    required=False
+                )
+            elif flag_short is None:
                 parser.add_argument(
                     flag_string,
                     nargs=flag_nargs,
@@ -245,7 +254,7 @@ class ArgumentManager:
         for argument in arguments.items():
             arg_type = parse_type(argument[1].get("type"))
             arg_dest = self._create_dest(parent_dest, argument[0])
-            arg_action = parse_action(argument[1].get("type"))
+            arg_action = parse_action(arg_type)
             arg_help = argument[1].get("help", "")
             arg_metavar = argument[1].get("metavar")
             arg_choices = argument[1].get("choices")
@@ -347,6 +356,8 @@ class ArgumentManager:
 def parse_type(yaml_type: str) -> object:
     if yaml_type == None:
         return None
+    if yaml_type == "bool" or yaml_type == "boolean":
+        return bool
     if yaml_type == "string":
         return str
     if yaml_type == "enum":
@@ -362,8 +373,8 @@ def parse_type(yaml_type: str) -> object:
     return None
 
 
-def parse_action(yaml_type: str) -> str:
-    if yaml_type == "bool":
+def parse_action(yaml_type: object) -> str:
+    if yaml_type == bool:
         return "store_true"
     return "store"
 

@@ -35,6 +35,11 @@ krakenctl:
               default: mixed
               metavar: STATE_TYPE
               help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
+            json:
+              type: bool
+              short: "-j"
+              default: false
+              help: return the json instead of formatting as a list
             filter:
               type: string
               metavar: FILTER
@@ -61,6 +66,11 @@ krakenctl:
               default: mixed
               metavar: STATE_TYPE
               help: The type of node state you want. cfg, dsc, or mixed. Mixed will show a combination of cfg and dsc with dsc values taking priority
+            json:
+              type: bool
+              short: "-j"
+              default: false
+              help: return the json instead of formatting as a list
             filter:
               type: string
               metavar: FILTER
@@ -74,7 +84,7 @@ krakenctl:
           arguments:
             node_config:
               type: path
-              metavar: CONFIG_PATH
+              metavar: CONFIG
               help: Path to config
         update:
           help: Update nodes with a kraken cfg state file
@@ -88,7 +98,7 @@ krakenctl:
                 - dsc
                 - cfg
             node_config:
-              metavar: CONFIG_PATH
+              metavar: CONFIG
               help: Path to config
               type: str
 

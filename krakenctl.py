@@ -6,6 +6,8 @@ import yaml
 import os
 import requests
 import sys
+import json
+import copy
 from table import print_table
 import pprint
 
@@ -43,52 +45,90 @@ def node_update(args: dict):
 
 
 def node_list(args: dict):
+    # get all args from cli
     verbose = args.get('verbose')
     ip = args.get('ip')
     debug = args.get('debug')
     filter_string = args.get('krakenctl_node_list_filter')
     node_id = args.get("krakenctl_node_info_node_id")
     list_type = args.get("krakenctl_node_list_type")
+    print_json_bool = args.get("krakenctl_node_list_json")
 
     if debug:
         print("node list got args: {}".format(args))
 
+    # build the urls
     dsc_url = build_url(ip, "dsc/nodes")
     cfg_url = build_url(ip, "cfg/nodes")
 
+    # if a node_id is defined, only get info for that node
     if node_id != None:
         dsc_url = build_url(ip, "dsc/node")
         dsc_url = "{}/{}".format(dsc_url, node_id)
         cfg_url = build_url(ip, "cfg/node")
         cfg_url = "{}/{}".format(cfg_url, node_id)
         list_type = args.get("krakenctl_node_info_type")
+        print_json_bool = args.get("krakenctl_node_info_json")
         filter_string = args.get("krakenctl_node_info_filter")
+        verbose = True
 
+    # fetch the cfg and dsc data from kraken
+    dsc_json = get_url(dsc_url, debug, verbose)
+    cfg_json = get_url(cfg_url, debug, verbose)
+
+    # regardless of if we are getting a single node or multiple, put them in their respective lists
+    dsc_nodes = []
+    cfg_nodes = []
+
+    if node_id != None:
+        dsc_nodes = [dsc_json]
+        cfg_nodes = [cfg_json]
+    else:
+        dsc_nodes = dsc_json.get("nodes")
+        cfg_nodes = cfg_json.get("nodes")
+
+    # Handle the different types.
+    # For dsc we merge in just node names
+    # For mixed we merge everything from dsc into cfg
     if list_type == 'cfg':
         if debug:
             print("state type is cfg")
-        json = get_url(cfg_url)
+        final_nodes = cfg_nodes
     elif list_type == 'dsc':
         if debug:
             print("state type is dsc")
-        json = get_url(dsc_url)
+        final_nodes = merge_nodename(dsc_nodes, cfg_nodes)
     elif list_type == 'mixed':
         if debug:
             print("state type is mixed")
-        cfg_json = get_url(cfg_url, debug, verbose)
-        dsc_json = get_url(dsc_url, debug, verbose)
+        final_nodes = merge_list(cfg_nodes, dsc_nodes)
 
-        json = merge_dict(cfg_json, dsc_json)
-
-    if node_id != None:
-        json = {"nodes": [json]}
-
-    final_json = json
+    # Do any provided filteres
     if filter_string is not None:
-        final_json = filter_dict(filter_string, json)
-        # print(final_json)
+        final_nodes = filter_list(filter_string, final_nodes)
+        dsc_nodes = filter_list(filter_string, dsc_nodes)
+        cfg_nodes = filter_list(filter_string, cfg_nodes)
 
-    print_table(final_json['nodes'], verbose=args.get("verbose"))
+    # Print out json or table
+    if print_json_bool:
+        if node_id != None:
+            dsc_nodes = dsc_nodes[0]
+            cfg_nodes = cfg_nodes[0]
+            final_nodes = final_nodes[0]
+        else:
+            dsc_nodes = {"nodes": dsc_nodes}
+            cfg_nodes = {"nodes": cfg_nodes}
+            final_nodes = {"nodes": final_nodes}
+
+        if list_type == 'mixed':
+            print("CFG:\n")
+            print_json(cfg_nodes, verbose)
+            print("\nDSC:\n")
+            print_json(dsc_nodes, verbose)
+        else:
+            print_json(final_nodes, verbose)
+    else:
+        print_table(final_nodes, verbose=verbose)
 
 
 def get_url(url: str, debug: bool = False, verbose: bool = False) -> dict:
@@ -159,6 +199,10 @@ def build_url(ip: str, url: str) -> str:
     return "http://{}/{}".format(ip, url)
 
 
+def print_json(final_json: dict, verbose: bool):
+    print(json.dumps(final_json, indent=4, sort_keys=True))
+
+
 def merge_list(a, b) -> list:
     final_list = []
     for a_item in a:
@@ -184,25 +228,41 @@ def merge_list(a, b) -> list:
 
 def merge_dict(a, b, path=None) -> dict:
     # "merges b into a"
+    final_dict = copy.deepcopy(a)
     if path is None:
         path = []
     for key in b:
-        if key in a:
-            if isinstance(a[key], dict) and isinstance(b[key], dict):
-                merge_dict(a[key], b[key], path + [str(key)])
-            elif a[key] == b[key]:
+        if key in final_dict:
+            if isinstance(final_dict[key], dict) and isinstance(final_dict[key], dict):
+                merge_dict(final_dict[key], b[key], path + [str(key)])
+            elif final_dict[key] == b[key]:
                 pass  # same leaf value
-            elif isinstance(a[key], list) and isinstance(b[key], list):
-                a[key] = merge_list(a[key], b[key])
+            elif isinstance(final_dict[key], list) and isinstance(b[key], list):
+                final_dict[key] = merge_list(final_dict[key], b[key])
             else:
-                a[key] = b[key]
+                final_dict[key] = b[key]
                 # raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
             a[key] = b[key]
     return a
 
 
-def filter_dict(filter_string: str, json: dict) -> dict:
+def merge_nodename(a: list, b: list) -> list:
+    a_nodes = copy.deepcopy(a)
+    for node in a_nodes:
+        node_a_id = node.get("id")
+        if node_a_id is not None:
+            b_nodes_filtered = list(filter(
+                                    lambda x: x.get("id") == node_a_id, b))
+            if len(b_nodes_filtered) == 1:
+                node_b_nodename = b_nodes_filtered[0].get("nodename")
+                if node_b_nodename is not None:
+                    node["nodename"] = node_b_nodename
+
+    return a_nodes
+
+
+def filter_list(filter_string: str, nodes: list) -> list:
     desired_columns = []
     for column in filter_string.split(','):
         desired_columns.append(column.strip())
@@ -214,7 +274,7 @@ def filter_dict(filter_string: str, json: dict) -> dict:
 
     # print(desired_columns)
     final_nodes = []
-    for node in json['nodes']:
+    for node in nodes:
         final_node = {}
         for column in desired_columns:
             column_value = node.get(column)
@@ -224,7 +284,7 @@ def filter_dict(filter_string: str, json: dict) -> dict:
             # print(column, column_value)
         final_nodes.append(final_node)
 
-    return {"nodes": final_nodes}
+    return final_nodes
 
 
 if __name__ == "__main__":
