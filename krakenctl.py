@@ -25,23 +25,39 @@ def main():
 
 
 def node_create(args: dict):
-    # print("node create got these args: {}".format(args))
     verbose = args.get("verbose")
     debug = args.get("debug")
     file_location = args.get("krakenctl_node_create_node_config")
 
+    if debug:
+        print("node create got these args: {}".format(args))
+        if file_location.name == "<stdin>":
+            print("reading from stdin")
+        else:
+            print("reading from {}".format(file_location.name))
+
+    data = file_location.read()
+
     url = build_url(args.get("ip"), "cfg/nodes")
-    send_file(url, "POST", file_location, debug, verbose)
+    send_json(url, "POST", data, debug, verbose)
 
 
 def node_update(args: dict):
-    # print("node update got these args: {}".format(args))
     verbose = args.get("verbose")
     debug = args.get("debug")
     file_location = args.get("krakenctl_node_update_node_config")
 
+    if debug:
+        print("node update got these args: {}".format(args))
+        if file_location.name == "<stdin>":
+            print("reading from stdin")
+        else:
+            print("reading from {}".format(file_location.name))
+
+    data = file_location.read()
+
     url = build_url(args.get("ip"), "cfg/nodes")
-    send_file(url, "PUT", file_location, debug, verbose)
+    send_json(url, "PUT", data, debug, verbose)
 
 
 def node_list(args: dict):
@@ -152,46 +168,42 @@ def get_url(url: str, debug: bool = False, verbose: bool = False) -> dict:
         raise SystemExit(e)
 
 
-def send_file(url: str, type: str, file_location: str, debug=False, verbose=False) -> None:
-    if os.path.isfile(file_location):
-        if type == "POST":
-            try:
-                r = requests.post(url, data=open(file_location, 'rb'))
-                if r.ok:
-                    json = r.json()
-                    if debug:
-                        print("json response: {}".format(json))
-                        print("response: {}".format(r))
-                    if len(json.keys()) == 0:
-                        print(
-                            "ERROR: kraken returned ok status but didn't return updated state\nCheck provided json file for errors")
-                    else:
-                        print("Success")
-            except requests.exceptions.RequestException as e:
-                print("ERROR: exception occured while POSTing data: {}".format(e))
-        elif type == "PUT":
-            try:
-                r = requests.put(url, data=open(file_location, 'rb'))
-                if r.ok:
-                    json = r.json()
-                    if debug:
-                        print("json response: {}".format(json))
-                        print("response: {}".format(r))
-                    if len(json.keys()) == 0:
-                        print(
-                            "ERROR: kraken returned ok status but didn't return updated state\nCheck provided json file for errors")
-                    else:
-                        print("Success")
-                else:
+def send_json(url: str, type: str, json: str, debug=False, verbose=False) -> None:
+    if type == "POST":
+        try:
+            r = requests.post(url, json)
+            if r.ok:
+                json = r.json()
+                if debug:
+                    print("json response: {}".format(json))
+                    print("response: {}".format(r))
+                if len(json.keys()) == 0:
                     print(
-                        "ERROR: response from kraken returned non-ok status code: {}".format(r.status_code))
-            except requests.exceptions.RequestException as e:
-                print("ERROR: exception occured while PUTing data: {}".format(e))
-        else:
-            print("received invalid type: {}".format(type))
-            sys.exit(1)
+                        "ERROR: kraken returned ok status but didn't return updated state\nCheck provided json file for errors")
+                else:
+                    print("Success")
+        except requests.exceptions.RequestException as e:
+            print("ERROR: exception occured while POSTing data: {}".format(e))
+    elif type == "PUT":
+        try:
+            r = requests.put(url, json)
+            if r.ok:
+                json = r.json()
+                if debug:
+                    print("json response: {}".format(json))
+                    print("response: {}".format(r))
+                if len(json.keys()) == 0:
+                    print(
+                        "ERROR: kraken returned ok status but didn't return updated state\nCheck provided json file for errors")
+                else:
+                    print("Success")
+            else:
+                print(
+                    "ERROR: response from kraken returned non-ok status code: {}".format(r.status_code))
+        except requests.exceptions.RequestException as e:
+            print("ERROR: exception occured while PUTing data: {}".format(e))
     else:
-        print("ERROR: path does not exist: {}".format(file_location))
+        print("received invalid type: {}".format(type))
         sys.exit(1)
 
 

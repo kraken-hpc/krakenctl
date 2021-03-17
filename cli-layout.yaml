@@ -100,8 +100,7 @@ krakenctl:
             node_config:
               metavar: CONFIG
               help: Path to config
-              type: str
-
+              type: path
         freeze:
           help: Freeze mutations on a single node
           func: node_freeze

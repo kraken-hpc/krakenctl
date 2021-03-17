@@ -369,7 +369,7 @@ def parse_type(yaml_type: str) -> object:
     if yaml_type == "float":
         return float
     if yaml_type == "path":
-        return pathlib.Path
+        return argparse.FileType('r')
     return None
 
 
