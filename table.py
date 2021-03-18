@@ -287,7 +287,9 @@ def color_state(state: str) -> Text:
     elif state == "INIT" or state == "PHYS_UNKNOWN":
         return Text(state, style='bold yellow')
     elif state == "ERROR" or state == "PHYS_ERROR":
-        return Text(state, style='bold red')
+        return Text(state, style=Style(bold=True, color="#ff0000"))
+    elif state == "STOP":
+        return Text(state, style=Style(bold=False, color="red"))
     elif state == "SYNC" or state == "POWER_ON":
         return Text(state, style='bold green')
     elif state == "POWER_OFF":
