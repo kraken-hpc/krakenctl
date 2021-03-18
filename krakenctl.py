@@ -46,6 +46,8 @@ def node_update(args: dict):
     verbose = args.get("verbose")
     debug = args.get("debug")
     file_location = args.get("krakenctl_node_update_node_config")
+    state_type = args.get("krakenctl_node_update_type")
+    ip = args.get("ip")
 
     if debug:
         print("node update got these args: {}".format(args))
@@ -56,7 +58,9 @@ def node_update(args: dict):
 
     data = file_location.read()
 
-    url = build_url(args.get("ip"), "cfg/nodes")
+    url = build_url(ip, "cfg/nodes")
+    if state_type == "dsc":
+        url = build_url(ip, "dsc/nodes")
     send_json(url, "PUT", data, debug, verbose)
 
 

@@ -90,17 +90,20 @@ krakenctl:
           help: Update nodes with a kraken cfg state file
           func: node_update
           arguments:
-            type:
-              metavar: STATE_TYPE
-              help: dsc or cfg
-              type: string
-              choices:
-                - dsc
-                - cfg
             node_config:
               metavar: CONFIG
               help: Path to config
               type: path
+          optional_flags:
+            type:
+              short: "-t"
+              type: string
+              choices:
+                - dsc
+                - cfg
+              default: cfg
+              metavar: STATE_TYPE
+              help: The type of node state you want to update.
         freeze:
           help: Freeze mutations on a single node
           func: node_freeze
