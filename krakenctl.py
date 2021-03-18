@@ -121,7 +121,8 @@ def node_list(args: dict):
     elif list_type == 'mixed':
         if debug:
             print("state type is mixed")
-        final_nodes = merge_list(cfg_nodes, dsc_nodes)
+        no_state_cfg_nodes = remove_state_list(cfg_nodes)
+        final_nodes = merge_list(no_state_cfg_nodes, dsc_nodes)
 
     # Do any provided filteres
     if filter_string is not None:
@@ -259,8 +260,8 @@ def merge_dict(a, b, path=None) -> dict:
                 final_dict[key] = b[key]
                 # raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
-            a[key] = b[key]
-    return a
+            final_dict[key] = b[key]
+    return final_dict
 
 
 def merge_nodename(a: list, b: list) -> list:
@@ -276,6 +277,25 @@ def merge_nodename(a: list, b: list) -> list:
                     node["nodename"] = node_b_nodename
 
     return a_nodes
+
+
+def remove_state_list(items: list) -> list:
+    # remove any keys that are "state"
+    clone_items = copy.deepcopy(items)
+    for item in clone_items:
+        if isinstance(item, dict):
+            item = remove_state_dict(item)
+    return clone_items
+
+
+def remove_state_dict(items: dict) -> dict:
+    for item in items.items():
+        if isinstance(item[1], list):
+            remove_state_list(item[1])
+        elif isinstance(item[1], dict):
+            remove_state_dict(item[1])
+        elif item[0] == "state" or item[0] == "physState" or item[0] == "runState":
+            item[1] == ""
 
 
 def filter_list(filter_string: str, nodes: list) -> list:
