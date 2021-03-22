@@ -1,3 +1,11 @@
+# argument_manager.py: argument management for krakenctl
+#
+# Author: Kevin Pelzel <kpelzel@lanl.gov>
+#
+# This software is open source software available under the BSD-3 license.
+# Copyright (c) 2021, Triad National Security, LLC
+# See LICENSE file for details.
+
 from enum import Enum
 from typing import List, NewType, Callable, Dict
 import argparse

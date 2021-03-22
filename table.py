@@ -1,3 +1,11 @@
+# table.py: table layout methods for krakenctl
+#
+# Author: Kevin Pelzel <kpelzel@lanl.gov>
+#
+# This software is open source software available under the BSD-3 license.
+# Copyright (c) 2021, Triad National Security, LLC
+# See LICENSE file for details.
+
 from rich.console import Console
 from rich.table import Column, Table
 from rich.text import Text

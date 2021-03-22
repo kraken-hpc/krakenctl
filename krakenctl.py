@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+# krakenctl.py: cli for viewing and manipulating running kraken instances
+#
+# Author: Kevin Pelzel <kpelzel@lanl.gov>
+#
+# This software is open source software available under the BSD-3 license.
+# Copyright (c) 2021, Triad National Security, LLC
+# See LICENSE file for details.
+
 # from argument_manager import ArgumentManager, OptionalArgument
 from argument_manager import ArgumentManager
 import yaml
