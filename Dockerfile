@@ -31,7 +31,7 @@ WORKDIR "/krakenctl"
 COPY . .
 
 # install python deps
-RUN pip3 install pyyaml requests rich
+RUN pip3 install --no-cache-dir pyyaml requests rich
 
 ENTRYPOINT [ "/krakenctl/krakenctl.py" ]
 CMD [ "-h" ]
