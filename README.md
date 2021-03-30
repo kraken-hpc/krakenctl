@@ -41,8 +41,10 @@ Note: instructions are for `podman`, but should work for `docker` as well.
 
 1) Make sure `podman` is installed and functional.
 2) `podman pull docker.io/krakenhpc/krakenctl:latest`
-3) `alias krakenctl="podman run --rm -it krakenctl"`
-4) Now run it!
+3) `alias krakenctl="podman run --rm -it --network=host krakenctl -i 127.0.0.1:3141"`
+   
+   Replace `127.0.0.1:3141` with the IP/port for your kraken restapi if it's not running on localhost.
+5) Now run it!
    ```bash
       $ krakenctl -h
    usage: krakenctl.py [-h] [-v] [-d] [-i IP_ADDRESS] action ...
